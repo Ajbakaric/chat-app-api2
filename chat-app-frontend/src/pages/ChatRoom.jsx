@@ -24,7 +24,6 @@ const ChatRoom = () => {
       { channel: 'ChatRoomChannel', chat_room_id: id },
       {
         received: (message) => {
-          console.log('New message received:', message);
           setMessages((prevMessages) => [...prevMessages, message]);
         },
       }
@@ -97,11 +96,18 @@ const ChatRoom = () => {
   };
 
   return (
-    <div className="p-4 text-white min-h-screen bg-gray-900">
-      <h2 className="text-2xl mb-4">Messages</h2>
-      <div className="space-y-4 mb-6">
+    <div className="flex flex-col h-screen bg-gray-900 text-white">
+      <header className="p-4 border-b border-gray-700">
+        <h2 className="text-2xl font-bold">Messages</h2>
+      </header>
+
+      {/* Scrollable message container */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-2 max-h-[calc(100vh-160px)]">
         {messages.map((msg) => (
-          <div key={msg.id} className="flex items-start space-x-3 bg-gray-800 p-3 rounded relative">
+          <div
+            key={msg.id}
+            className="flex items-start space-x-3 bg-gray-800 p-3 rounded relative"
+          >
             {msg.sender_avatar_url && (
               <img
                 src={msg.sender_avatar_url}
@@ -135,13 +141,14 @@ const ChatRoom = () => {
                 </>
               ) : (
                 <>
-                  {msg.content && <p className="mb-2">{msg.content}</p>}
-                  {msg.image_url && (
+                  {msg.image_url ? (
                     <img
                       src={msg.image_url}
                       alt="uploaded"
-                      className="mt-2 rounded max-h-40 object-cover"
+                      className="mt-2 rounded max-w-xs object-cover"
                     />
+                  ) : (
+                    msg.content && <p className="mb-2">{msg.content}</p>
                   )}
                   <div className="text-xs text-gray-400 mt-1">
                     {new Date(msg.created_at).toLocaleTimeString()}
@@ -168,7 +175,8 @@ const ChatRoom = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="flex items-center space-x-2">
+      {/* Message input bar */}
+      <div className="p-4 border-t border-gray-700 flex items-center space-x-2">
         <input
           className="p-2 rounded bg-white text-gray-900 flex-grow"
           value={content}

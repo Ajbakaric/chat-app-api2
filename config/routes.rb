@@ -13,18 +13,18 @@ Rails.application.routes.draw do
              }
 
   # Profile routes (custom user endpoint)
-  devise_scope :user do
-    get '/profile', to: 'users/registrations#show'
-    put '/profile', to: 'users/registrations#update'
-  end
-  
+devise_scope :user do
+  get '/profile', to: 'users/registrations#show'
+  put '/profile', to: 'users/registrations#update'
+end
+
   # ActionCable WebSocket endpoint
   mount ActionCable.server => '/cable'
 
   # API routes
   namespace :api do
     namespace :v1 do
-      resources :chat_rooms do
+      resources :chat_rooms, only: [:index, :create, :destroy] do
         resources :messages, only: [:index, :create, :update, :destroy]
       end
     end

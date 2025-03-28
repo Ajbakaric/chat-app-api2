@@ -16,7 +16,12 @@ class Api::V1::ChatRoomsController < ApplicationController
       chat_room = ChatRoom.find(params[:id])
       render json: chat_room
     end
-  
+    def destroy
+      chat_room = ChatRoom.find(params[:id])
+      chat_room.destroy
+      head :no_content
+    end
+    
     private
     def chat_room_params
       params.require(:chat_room).permit(:name)

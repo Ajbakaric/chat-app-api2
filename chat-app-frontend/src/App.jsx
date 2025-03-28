@@ -37,7 +37,7 @@ function App() {
 
   return (
     <div className="bg-gray-900 text-white min-h-screen">
-      <nav className="bg-gray-800 p-4 flex justify-between items-center">
+      <nav className="bg-gray-800 p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
         <Link to="/" className="text-xl font-bold">💬 ChatApp</Link>
 
         <div className="space-x-4 text-sm flex items-center">
