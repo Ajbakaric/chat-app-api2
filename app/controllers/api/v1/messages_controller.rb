@@ -1,5 +1,6 @@
 class Api::V1::MessagesController < ApplicationController
-    def index
+  include Rails.application.routes.url_helpers
+  def index
       chat_room = ChatRoom.find(params[:chat_room_id])
       messages = chat_room.messages
       render json: messages
@@ -8,16 +9,22 @@ class Api::V1::MessagesController < ApplicationController
     def create
       chat_room = ChatRoom.find(params[:chat_room_id])
       message = chat_room.messages.new(message_params)
+    
       if message.save
-        render json: message, status: :created
+        message_data = message.as_json
+        message_data[:image_url] = url_for(message.image) if message.image.attached?
+      
+        ChatRoomChannel.broadcast_to(chat_room, message_data)
+        render json: message_data, status: :created
       else
         render json: message.errors, status: :unprocessable_entity
-      end
+      end      
     end
+    
   
     private
     def message_params
-      params.require(:message).permit(:content)
-    end
+      params.require(:message).permit(:content, :image)
+    end    
   end
   
