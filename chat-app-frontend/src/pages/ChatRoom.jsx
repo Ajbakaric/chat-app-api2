@@ -6,14 +6,12 @@ import { createConsumer } from '@rails/actioncable';
 const consumer = createConsumer('ws://localhost:3000/cable');
 
 const ChatRoom = () => {
-  const { id } = useParams(); // Chat Room ID from the URL
+  const { id } = useParams();
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState('');
   const [image, setImage] = useState(null);
-
   const [editingId, setEditingId] = useState(null);
   const [editingContent, setEditingContent] = useState('');
-
   const messagesEndRef = useRef();
 
   useEffect(() => {
@@ -45,13 +43,12 @@ const ChatRoom = () => {
     if (image) formData.append('message[image]', image);
 
     axios
-      .post(
-        `http://localhost:3000/api/v1/chat_rooms/${id}/messages`,
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        }
-      )
+      .post(`http://localhost:3000/api/v1/chat_rooms/${id}/messages`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('token')}`, // Replace or refactor if needed
+        },
+      })
       .then(() => {
         setContent('');
         setImage(null);
@@ -68,8 +65,11 @@ const ChatRoom = () => {
     axios
       .patch(
         `http://localhost:3000/api/v1/chat_rooms/${id}/messages/${messageId}`,
+        { message: { content: editingContent } },
         {
-          message: { content: editingContent },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         }
       )
       .then((res) => {
@@ -84,7 +84,12 @@ const ChatRoom = () => {
   const deleteMessage = (messageId) => {
     axios
       .delete(
-        `http://localhost:3000/api/v1/chat_rooms/${id}/messages/${messageId}`
+        `http://localhost:3000/api/v1/chat_rooms/${id}/messages/${messageId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
       )
       .then(() => {
         setMessages((prev) => prev.filter((m) => m.id !== messageId));
@@ -97,6 +102,9 @@ const ChatRoom = () => {
       <div className="space-y-4 mb-6">
         {messages.map((msg) => (
           <div key={msg.id} className="bg-gray-800 p-3 rounded relative">
+            {msg.sender_email && (
+              <p className="text-xs text-gray-400 mb-1">{msg.sender_email}</p>
+            )}
             {editingId === msg.id ? (
               <>
                 <input
@@ -129,9 +137,9 @@ const ChatRoom = () => {
                     className="mt-2 rounded max-h-40 object-cover"
                   />
                 )}
-                <small className="text-gray-400 text-xs">
+                <div className="text-xs text-gray-400 mt-1">
                   {new Date(msg.created_at).toLocaleTimeString()}
-                </small>
+                </div>
                 <div className="absolute top-2 right-2 text-xs space-x-2">
                   <button
                     className="text-blue-300 hover:underline"

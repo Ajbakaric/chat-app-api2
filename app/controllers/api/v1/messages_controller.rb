@@ -9,17 +9,21 @@ class Api::V1::MessagesController < ApplicationController
     def create
       chat_room = ChatRoom.find(params[:chat_room_id])
       message = chat_room.messages.new(message_params)
+      message.sender = current_user
     
       if message.save
         message_data = message.as_json
         message_data[:image_url] = url_for(message.image) if message.image.attached?
-      
+        message_data[:sender_email] = current_user.email
         ChatRoomChannel.broadcast_to(chat_room, message_data)
         render json: message_data, status: :created
       else
-        render json: message.errors, status: :unprocessable_entity
-      end      
+        Rails.logger.error "❌ MESSAGE ERROR: #{message.errors.full_messages.join(', ')}"
+        render json: { errors: message.errors.full_messages }, status: :unprocessable_entity
+      end
     end
+    
+    
     
     def update
       message = Message.find(params[:id])
