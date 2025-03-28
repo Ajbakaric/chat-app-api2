@@ -14,10 +14,10 @@ const Login = ({ setUser }) => {
       });
 
       const token = res.data.token;
-      localStorage.setItem('token', token);
+      localStorage.setItem('token', res.data.token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(res.data.user);
-      navigate('/'); // Go to chat room
+navigate('/chatrooms');
     } catch (err) {
       console.error(err);
       alert('Login failed!');

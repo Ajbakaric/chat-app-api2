@@ -7,5 +7,6 @@ class User < ApplicationRecord
 
   include Devise::JWT::RevocationStrategies::JTIMatcher
     has_many :sent_messages, class_name: "Message", foreign_key: "sender_id"
+    has_one_attached :avatar
   end
   

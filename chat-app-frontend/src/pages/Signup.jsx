@@ -7,17 +7,20 @@ const Signup = () => {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const navigate = useNavigate();
+  const [avatar, setAvatar] = useState(null);
 
   const handleSignup = async () => {
+    const formData = new FormData();
+    formData.append('user[email]', email);
+    formData.append('user[password]', password);
+    formData.append('user[username]', username);
+    if (avatar) formData.append('user[avatar]', avatar);
+  
     try {
-      const res = await axios.post('http://localhost:3000/signup', {
-        user: {
-          email,
-          password,
-          username
-        }
+      const res = await axios.post('http://localhost:3000/signup', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
-
+  
       alert('Signup successful! You can now log in.');
       navigate('/login');
     } catch (err) {
@@ -25,6 +28,7 @@ const Signup = () => {
       alert('Signup failed!');
     }
   };
+  
 
   return (
     <div className="p-4 text-white max-w-md mx-auto">
@@ -45,6 +49,12 @@ const Signup = () => {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
+
+        <input
+        className="mb-4"
+        type="file"
+        onChange={(e) => setAvatar(e.target.files[0])}
+        />
 
       <input
         className="p-2 text-black rounded w-full mb-4"

@@ -46,7 +46,7 @@ const ChatRoom = () => {
       .post(`http://localhost:3000/api/v1/chat_rooms/${id}/messages`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${localStorage.getItem('token')}`, // Replace or refactor if needed
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       })
       .then(() => {
@@ -101,61 +101,68 @@ const ChatRoom = () => {
       <h2 className="text-2xl mb-4">Messages</h2>
       <div className="space-y-4 mb-6">
         {messages.map((msg) => (
-          <div key={msg.id} className="bg-gray-800 p-3 rounded relative">
-            {msg.sender_email && (
+          <div key={msg.id} className="flex items-start space-x-3 bg-gray-800 p-3 rounded relative">
+            {msg.sender_avatar_url && (
+              <img
+                src={msg.sender_avatar_url}
+                alt="avatar"
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            )}
+            <div className="flex-1">
               <p className="text-xs text-gray-400 mb-1">{msg.sender_email}</p>
-            )}
-            {editingId === msg.id ? (
-              <>
-                <input
-                  className="p-2 rounded bg-white text-black w-full mb-2"
-                  value={editingContent}
-                  onChange={(e) => setEditingContent(e.target.value)}
-                />
-                <div className="space-x-2 text-sm">
-                  <button
-                    className="text-green-400 hover:underline"
-                    onClick={() => handleEdit(msg.id)}
-                  >
-                    Save
-                  </button>
-                  <button
-                    className="text-red-400 hover:underline"
-                    onClick={() => setEditingId(null)}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                {msg.content && <p className="mb-2">{msg.content}</p>}
-                {msg.image_url && (
-                  <img
-                    src={msg.image_url}
-                    alt="uploaded"
-                    className="mt-2 rounded max-h-40 object-cover"
+              {editingId === msg.id ? (
+                <>
+                  <input
+                    className="p-2 rounded bg-white text-black w-full mb-2"
+                    value={editingContent}
+                    onChange={(e) => setEditingContent(e.target.value)}
                   />
-                )}
-                <div className="text-xs text-gray-400 mt-1">
-                  {new Date(msg.created_at).toLocaleTimeString()}
-                </div>
-                <div className="absolute top-2 right-2 text-xs space-x-2">
-                  <button
-                    className="text-blue-300 hover:underline"
-                    onClick={() => startEdit(msg)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="text-red-300 hover:underline"
-                    onClick={() => deleteMessage(msg.id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </>
-            )}
+                  <div className="space-x-2 text-sm">
+                    <button
+                      className="text-green-400 hover:underline"
+                      onClick={() => handleEdit(msg.id)}
+                    >
+                      Save
+                    </button>
+                    <button
+                      className="text-red-400 hover:underline"
+                      onClick={() => setEditingId(null)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {msg.content && <p className="mb-2">{msg.content}</p>}
+                  {msg.image_url && (
+                    <img
+                      src={msg.image_url}
+                      alt="uploaded"
+                      className="mt-2 rounded max-h-40 object-cover"
+                    />
+                  )}
+                  <div className="text-xs text-gray-400 mt-1">
+                    {new Date(msg.created_at).toLocaleTimeString()}
+                  </div>
+                  <div className="absolute top-2 right-2 text-xs space-x-2">
+                    <button
+                      className="text-blue-300 hover:underline"
+                      onClick={() => startEdit(msg)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="text-red-300 hover:underline"
+                      onClick={() => deleteMessage(msg.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         ))}
         <div ref={messagesEndRef} />

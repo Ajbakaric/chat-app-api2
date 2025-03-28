@@ -13,6 +13,7 @@ class Api::V1::MessagesController < ApplicationController
     
       if message.save
         message_data = message.as_json
+        message_data[:sender_avatar_url] = current_user.avatar.attached? ? url_for(current_user.avatar) : nil
         message_data[:image_url] = url_for(message.image) if message.image.attached?
         message_data[:sender_email] = current_user.email
         ChatRoomChannel.broadcast_to(chat_room, message_data)
