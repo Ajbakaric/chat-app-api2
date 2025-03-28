@@ -21,7 +21,21 @@ class Api::V1::MessagesController < ApplicationController
       end      
     end
     
-  
+    def update
+      message = Message.find(params[:id])
+      if message.update(message_params)
+        render json: message, status: :ok
+      else
+        render json: message.errors, status: :unprocessable_entity
+      end
+    end
+    
+    def destroy
+      message = Message.find(params[:id])
+      message.destroy
+      head :no_content
+    end
+    
     private
     def message_params
       params.require(:message).permit(:content, :image)
