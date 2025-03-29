@@ -1,41 +1,37 @@
-import { Link, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Link } from 'react-router-dom';
 
 const NavBar = ({ user, setUser }) => {
-  const navigate = useNavigate();
-
   const handleLogout = () => {
     localStorage.removeItem('token');
+    delete axios.defaults.headers.common['Authorization'];
     setUser(null);
-    navigate('/login');
   };
 
   return (
-    <nav className="bg-gray-900 text-white px-4 py-3 flex justify-between items-center">
-      <div className="text-xl font-bold">
-        <Link to="/chatrooms">ChatApp</Link>
-      </div>
+    <nav className="bg-[#0f3d2e] text-white px-6 py-4 flex justify-between items-center shadow-md">
+      <Link to="/" className="text-2xl font-bold text-[#c2f970]">💬 BanterBox</Link>
 
-      {user ? (
-        <div className="flex items-center gap-4">
-          <span className="text-sm hidden sm:inline">
-            Logged in as <strong>{user.email}</strong>
-          </span>
-          <Link to="/profile" className="text-sm bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">
-            Profile
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="text-sm bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
-          >
-            Logout
-          </button>
-        </div>
-      ) : (
-        <div className="space-x-2">
-          <Link to="/login" className="text-sm hover:underline">Login</Link>
-          <Link to="/signup" className="text-sm hover:underline">Sign Up</Link>
-        </div>
-      )}
+      <div className="space-x-4 text-sm">
+        {!user ? (
+          <>
+            <Link to="/login" className="hover:text-[#ffa8a8]">Login</Link>
+            <Link to="/signup" className="hover:text-[#ffa8a8]">Sign Up</Link>
+          </>
+        ) : (
+          <>
+            <Link to="/chatrooms" className="hover:text-[#ffa8a8]">Rooms</Link>
+            <Link to="/profile" className="hover:text-[#ffa8a8]">Profile</Link>
+            <span className="text-[#c2f970] font-semibold">({user.email})</span>
+            <button
+              onClick={handleLogout}
+              className="bg-[#ff6f61] hover:bg-[#ffa8a8] text-white px-3 py-1 rounded-md font-medium"
+            >
+              Logout
+            </button>
+          </>
+        )}
+      </div>
     </nav>
   );
 };

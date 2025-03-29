@@ -1,94 +1,103 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-const ChatRooms = () => {
-  const [rooms, setRooms] = useState([]);
-  const [name, setName] = useState('');
+const ChatRooms = ({ user }) => {
+  const [chatRooms, setChatRooms] = useState([]);
+  const [roomName, setRoomName] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios
       .get('http://localhost:3000/api/v1/chat_rooms')
-      .then((res) => setRooms(res.data))
-      .catch((err) => console.error(err));
+      .then((res) => setChatRooms(res.data))
+      .catch((err) => console.error('Failed to fetch chat rooms:', err));
   }, []);
 
-  const createRoom = () => {
-    if (!name.trim()) {
-      alert('Please enter a valid room name!');
-      return;
-    }
+  const createRoom = async () => {
+    if (!roomName.trim()) return;
 
-    axios
-      .post('http://localhost:3000/api/v1/chat_rooms', {
-        chat_room: { name },
-      })
-      .then((res) => {
-        setRooms([...rooms, res.data]);
-        setName('');
-      })
-      .catch((err) => console.error(err));
+    try {
+      const res = await axios.post(
+        'http://localhost:3000/api/v1/chat_rooms',
+        { chat_room: { name: roomName } },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      setChatRooms([...chatRooms, res.data]);
+      setRoomName('');
+    } catch (err) {
+      console.error('Create chat room failed:', err);
+    }
   };
 
-  const handleDeleteRoom = (roomId) => {
+  const deleteRoom = async (id) => {
     if (!window.confirm('Are you sure you want to delete this room?')) return;
 
-    axios
-      .delete(`http://localhost:3000/api/v1/chat_rooms/${roomId}`, {
+    try {
+      await axios.delete(`http://localhost:3000/api/v1/chat_rooms/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-      })
-      .then(() => {
-        setRooms((prev) => prev.filter((room) => room.id !== roomId));
-      })
-      .catch((err) => console.error(err));
+      });
+      setChatRooms(chatRooms.filter((room) => room.id !== id));
+    } catch (err) {
+      console.error('Delete chat room failed:', err);
+    }
   };
 
   return (
-    <div className="p-4 text-white max-w-xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4">Chat Rooms</h1>
+    <div className="min-h-screen bg-gradient-to-br from-[#eafce3] to-[#bdf2ce] flex items-center justify-center px-4">
+      <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-xl">
+        <h1 className="text-3xl font-bold text-[#004b23] mb-6 text-center">
+          Chat Rooms
+        </h1>
 
-      <div className="flex items-center space-x-2 mb-6">
-        <input
-          className="p-2 rounded bg-white text-gray-900 flex-grow"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="New room name"
-        />
-        <button
-          className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded"
-          onClick={createRoom}
-        >
-          Create
-        </button>
-      </div>
-
-      {rooms.length === 0 ? (
-        <p className="text-gray-400">No rooms yet. Be the first to create one!</p>
-      ) : (
-        <div className="space-y-2">
-          {rooms.map((room) => (
-            <div
-              key={room.id}
-              className="flex justify-between items-center bg-gray-800 p-3 rounded"
-            >
-              <Link
-                to={`/chat/${room.id}`}
-                className="text-blue-400 hover:underline"
-              >
-                {room.name}
-              </Link>
-              <button
-                onClick={() => handleDeleteRoom(room.id)}
-                className="text-red-400 hover:text-red-600 text-sm"
-              >
-                Delete
-              </button>
-            </div>
-          ))}
+        <div className="flex mb-6">
+          <input
+            type="text"
+            placeholder="New room name"
+            value={roomName}
+            onChange={(e) => setRoomName(e.target.value)}
+            className="flex-1 px-4 py-2 border border-[#38b000] rounded-l-md focus:outline-none bg-[#f6fff4] text-[#004b23]"
+          />
+          <button
+            onClick={createRoom}
+            className="bg-[#38b000] text-white px-4 rounded-r-md hover:bg-[#50a33c] font-semibold"
+          >
+            Create
+          </button>
         </div>
-      )}
+
+        {chatRooms.length === 0 ? (
+          <p className="text-gray-500 text-center">No rooms yet. Be the first to create one!</p>
+        ) : (
+          <ul className="space-y-3">
+            {chatRooms.map((room) => (
+              <li
+                key={room.id}
+                className="flex justify-between items-center bg-[#f6fff4] px-4 py-3 rounded-lg shadow-sm hover:bg-[#e2f6e5]"
+              >
+                <button
+                  onClick={() => navigate(`/chat/${room.id}`)}
+                  className="text-[#004b23] font-medium hover:text-[#50a33c]"
+                >
+                  {room.name}
+                </button>
+                <button
+                  onClick={() => deleteRoom(room.id)}
+                  className="text-sm text-[#ff6f61] hover:text-[#ffa8a8] font-medium"
+                >
+                  Delete
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 };
