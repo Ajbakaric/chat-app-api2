@@ -6,7 +6,7 @@ import ChatRoom from './pages/ChatRoom';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Profile from './pages/Profile';
-import NavBar from './/NavBar';
+import NavBar from './pages/NavBar';
 
 function App() {
   const [user, setUser] = useState(null);
