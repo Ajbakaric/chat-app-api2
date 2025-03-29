@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const Signup = ({ setUser }) => {
+const Signup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
@@ -20,21 +20,12 @@ const Signup = ({ setUser }) => {
 
     try {
       const res = await axios.post('http://localhost:3000/signup', formData);
-
-      const token = res.data.token;
-      localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-      setUser(res.data.user);
+      localStorage.setItem('token', res.data.token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
       navigate('/chatrooms');
     } catch (err) {
-      console.error('Signup failed:', err.response?.data || err.message);
-
-      if (err.response?.data?.errors) {
-        alert(`Signup failed: ${err.response.data.errors.join(', ')}`);
-      } else {
-        alert('Signup failed. Please try again.');
-      }
+      console.error('Signup failed', err);
+      alert('Signup failed.');
     }
   };
 
