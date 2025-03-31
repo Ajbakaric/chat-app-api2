@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 const Profile = ({ user, setUser }) => {
-    if (!user) {
-      return <div className="text-white p-4">Loading user profile...</div>;
-    }
+  if (!user) {
+    return <div className="text-[#5f8b4c] p-4">Loading user profile...</div>;
+  }
+
   const [username, setUsername] = useState(user?.username || '');
   const [email, setEmail] = useState(user?.email || '');
   const [avatar, setAvatar] = useState(null);
@@ -39,45 +40,47 @@ const Profile = ({ user, setUser }) => {
   };
 
   return (
-    <div className="p-4 text-white max-w-md mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Your Profile</h2>
+    <div className="min-h-screen bg-gradient-to-br from-[#ffddab] to-[#5f8b4c] flex items-center justify-center px-4">
+      <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-md">
+        <h2 className="text-2xl font-bold text-[#945034] mb-4 text-center">Your Profile</h2>
 
-      {user.avatar_url && (
-        <img
-          src={user.avatar_url}
-          alt="Your avatar"
-          className="w-20 h-20 rounded-full mb-4 object-cover"
+        {user.avatar_url && (
+          <img
+            src={user.avatar_url}
+            alt="Your avatar"
+            className="w-24 h-24 rounded-full mb-4 object-cover mx-auto border-4 border-[#ff9a9a]"
+          />
+        )}
+
+        <input
+          className="p-2 bg-[#fef8f5] text-[#945034] placeholder-[#caa08d] border border-[#ff9a9a] rounded w-full mb-3"
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
         />
-      )}
 
-<input
-  className="p-2 bg-gray-800 text-white placeholder-gray-400 rounded w-full mb-3"
-        type="text"
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
+        <input
+          className="p-2 bg-[#fef8f5] text-[#945034] placeholder-[#caa08d] border border-[#ff9a9a] rounded w-full mb-3"
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-<input
-  className="p-2 bg-gray-800 text-white placeholder-gray-400 rounded w-full mb-3"
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
+        <input
+          className="mb-4 text-[#945034]"
+          type="file"
+          onChange={(e) => setAvatar(e.target.files[0])}
+        />
 
-      <input
-        className="mb-4"
-        type="file"
-        onChange={(e) => setAvatar(e.target.files[0])}
-      />
-
-      <button
-        className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded w-full"
-        onClick={handleAvatarUpload}
-      >
-        Update Profile
-      </button>
+        <button
+          className="bg-[#5f8b4c] hover:bg-[#4e753d] text-white px-4 py-2 rounded w-full transition-all font-semibold"
+          onClick={handleAvatarUpload}
+        >
+          Update Profile
+        </button>
+      </div>
     </div>
   );
 };
