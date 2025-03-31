@@ -18,13 +18,19 @@ const ChatRoom = ({ user }) => {
     axios
       .get(`http://localhost:3000/api/v1/chat_rooms/${id}/messages`)
       .then((res) => setMessages(res.data))
-      .catch((err) => console.error(err));
+      .catch((err) => console.error('Failed to fetch chat messages:', err));
 
     const subscription = consumer.subscriptions.create(
       { channel: 'ChatRoomChannel', chat_room_id: id },
       {
-        received: (message) => {
-          setMessages((prevMessages) => [...prevMessages, message]);
+        received: (incomingMessage) => {
+          setMessages((prevMessages) => {
+            const newMessages = [...prevMessages, incomingMessage];
+            const uniqueMessages = Array.from(
+              new Map(newMessages.map(msg => [`${msg.id}-${msg.created_at}`, msg])).values()
+            );
+            return uniqueMessages;
+          });
         },
       }
     );
@@ -36,23 +42,38 @@ const ChatRoom = ({ user }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
+    if (!content.trim()) return;
+
     const formData = new FormData();
     formData.append('message[content]', content);
     if (image) formData.append('message[image]', image);
 
-    axios
-      .post(`http://localhost:3000/api/v1/chat_rooms/${id}/messages`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      })
-      .then(() => {
-        setContent('');
-        setImage(null);
-      })
-      .catch((err) => console.error(err));
+    try {
+      const res = await axios.post(
+        `http://localhost:3000/api/v1/chat_rooms/${id}/messages`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+
+      setMessages((prevMessages) => {
+        const newMessages = [...prevMessages, res.data];
+        const uniqueMessages = Array.from(
+          new Map(newMessages.map(msg => [`${msg.id}-${msg.created_at}`, msg])).values()
+        );
+        return uniqueMessages;
+      });
+
+      setContent('');
+      setImage(null);
+    } catch (err) {
+      console.error('Failed to send message:', err);
+    }
   };
 
   const startEdit = (msg) => {
@@ -102,9 +123,9 @@ const ChatRoom = ({ user }) => {
       </header>
 
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
-        {messages.map((msg) => (
+        {messages.map((msg, index) => (
           <div
-            key={msg.id}
+            key={`${msg.id}-${msg.created_at}-${index}`}
             className="flex items-start gap-3 bg-white shadow-md p-4 rounded-xl relative"
           >
             {msg.sender_avatar_url && (

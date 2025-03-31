@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 const NavBar = ({ user, setUser }) => {
   const handleLogout = () => {
