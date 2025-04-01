@@ -14,11 +14,21 @@ const ChatRoom = ({ user }) => {
   const [editingContent, setEditingContent] = useState('');
   const messagesEndRef = useRef();
 
+  const fetchMessages = async () => {
+    try {
+      const res = await axios.get(`http://localhost:3000/api/v1/chat_rooms/${id}/messages`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      setMessages(res.data);
+    } catch (err) {
+      console.error('Failed to fetch messages:', err);
+    }
+  };
+
   useEffect(() => {
-    axios
-      .get(`http://localhost:3000/api/v1/chat_rooms/${id}/messages`)
-      .then((res) => setMessages(res.data))
-      .catch((err) => console.error('Failed to fetch chat messages:', err));
+    fetchMessages();
 
     const subscription = consumer.subscriptions.create(
       { channel: 'ChatRoomChannel', chat_room_id: id },
@@ -43,10 +53,10 @@ const ChatRoom = ({ user }) => {
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!content.trim()) return;
+    if (!content.trim() && !image) return;
 
     const formData = new FormData();
-    formData.append('message[content]', content);
+    formData.append('message[content]', content || '');
     if (image) formData.append('message[image]', image);
 
     try {
@@ -55,8 +65,8 @@ const ChatRoom = ({ user }) => {
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'multipart/form-data',
           },
         }
       );
@@ -72,7 +82,7 @@ const ChatRoom = ({ user }) => {
       setContent('');
       setImage(null);
     } catch (err) {
-      console.error('Failed to send message:', err);
+      console.error('Send failed:', err);
     }
   };
 
@@ -137,7 +147,9 @@ const ChatRoom = ({ user }) => {
             )}
 
             <div className="flex-1">
-              <p className="text-sm text-[#50a33c] font-semibold mb-1">{msg.sender_email}</p>
+              <p className="text-sm text-[#50a33c] font-semibold mb-1">
+                {msg.sender_email || msg.user?.email}
+              </p>
 
               {editingId === msg.id ? (
                 <>
@@ -163,20 +175,21 @@ const ChatRoom = ({ user }) => {
                 </>
               ) : (
                 <>
-                  {msg.image_url ? (
+                  {msg.image_url && (
                     <img
                       src={msg.image_url}
-                      alt="uploaded"
-                      className="mt-2 rounded-lg max-w-xs object-cover"
+                      alt="attachment"
+                      className="rounded-lg max-w-xs mt-2"
                     />
-                  ) : (
+                  )}
+                  {msg.content && (
                     <p className="text-[#004b23] mb-1">{msg.content}</p>
                   )}
                   <div className="text-xs text-gray-500">
                     {new Date(msg.created_at).toLocaleTimeString()}
                   </div>
 
-                  {user?.email === msg.sender_email && (
+                  {(msg.sender_email === user?.email || msg.user?.email === user?.email) && (
                     <div className="absolute top-2 right-3 text-xs space-x-2">
                       <button
                         className="text-blue-600 hover:underline"
@@ -203,9 +216,9 @@ const ChatRoom = ({ user }) => {
       <div className="p-4 border-t border-[#74c99a] bg-white flex items-center gap-2">
         <input
           type="text"
+          placeholder="Type your message"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="Type your message"
           className="flex-1 px-4 py-2 rounded border border-[#b5e3b4] text-[#004b23] bg-[#f6fff4]"
         />
         <input
