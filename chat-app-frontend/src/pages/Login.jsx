@@ -14,10 +14,12 @@ const Login = ({ setUser }) => {
         user: { email, password },
       }, {
         headers: {
-          'Content-Type': 'application/json',  // Ensure this header is set
+          'Content-Type': 'application/json',
+          'Accept': 'application/json' // 🪲 This tells Rails: “This is JSON, not HTML!”
         }
       });
-  
+      
+      
       const token = res.data.token;
       localStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;  // Set token in default axios

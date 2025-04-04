@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
-import axios from 'axios';  // Use default axios directly
- // adjust path if needed
-
+import axios from 'axios';
 
 const Profile = ({ user, setUser }) => {
   const [username, setUsername] = useState(user?.username || '');
   const [email, setEmail] = useState(user?.email || '');
   const [avatar, setAvatar] = useState(null);
+
+  const refreshUser = async () => {
+    try {
+      const res = await axios.get('/profile');
+      setUser(res.data.user);
+    } catch (err) {
+      console.error('Failed to refresh user:', err);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,7 +22,7 @@ const Profile = ({ user, setUser }) => {
         user: { username, email },
       });
 
-      setUser(res.data.user); // ✅ critical for test
+      await refreshUser(); // ✅ get updated avatar_url if changed
       alert('Profile updated!');
     } catch (err) {
       alert('Update failed.');
@@ -36,7 +43,7 @@ const Profile = ({ user, setUser }) => {
         },
       });
 
-      setUser(res.data.user); // ✅ optional: update user with avatar_url
+      await refreshUser(); // ✅ refresh data after avatar update
       alert('Avatar uploaded!');
     } catch (err) {
       alert('Avatar upload failed.');
@@ -47,7 +54,21 @@ const Profile = ({ user, setUser }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#ffddab] to-[#5f8b4c] flex items-center justify-center px-4">
       <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-md">
-        <h2 className="text-2xl font-bold text-[#945034] mb-4 text-center">Your Profile</h2>
+        <h2 className="text-2xl font-bold text-[#945034] mb-6 text-center">Your Profile</h2>
+
+        {user?.avatar_url ? (
+          <div className="mb-6 flex justify-center">
+            <img
+              src={user.avatar_url}
+              alt="Profile avatar"
+              className="w-32 h-32 rounded-full object-cover border-4 border-green-600 shadow-lg"
+            />
+          </div>
+        ) : (
+          <div className="w-32 h-32 mx-auto mb-6 bg-gray-300 rounded-full flex items-center justify-center text-3xl text-white font-bold">
+            {username?.[0]?.toUpperCase() || '👤'}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <input

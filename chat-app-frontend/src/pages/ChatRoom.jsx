@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';  // Use default axios directly
- // adjust path if needed
+import axios from 'axios';
 import { createConsumer } from '@rails/actioncable';
 
 const consumer = createConsumer('ws://localhost:3000/cable');
@@ -59,7 +58,6 @@ const ChatRoom = ({ user }) => {
     const formData = new FormData();
     formData.append('message[content]', content || '');
     formData.append('message[chat_room_id]', id);
-    formData.append('message[user_id]', user.id);
     if (image) formData.append('message[image]', image);
 
     try {
@@ -85,6 +83,7 @@ const ChatRoom = ({ user }) => {
 
       setContent('');
       setImage(null);
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     } catch (err) {
       console.error('Send failed:', err);
     }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
-import axios from 'axios';  // Use default axios directly
+import axios from 'axios';
 
 import ChatRooms from './pages/ChatRooms';
 import ChatRoom from './pages/ChatRoom';
@@ -18,10 +18,15 @@ function App() {
     const token = localStorage.getItem('token');
 
     if (token) {
-      axios.get('/profile')
-        .then((res) => {
-          setUser(res.data.user);
-        })
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      window.axios = axios; // ✅ Makes axios available in DevTools
+
+      axios.get('http://localhost:3000/profile')
+      .then((res) => {
+        console.log('[🐛DEBUG] Profile response:', res.data);
+        setUser(res.data.user);
+      })
+    
         .catch(() => {
           console.error('Auth token invalid or expired.');
           localStorage.removeItem('token');
@@ -44,7 +49,14 @@ function App() {
   };
 
   const ProtectedRoute = ({ children }) => {
-    if (loading) return null; // optionally: a loader/spinner here
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center h-screen text-lg text-green-200">
+          Loading...
+        </div>
+      );
+    }
+
     return user ? children : <Navigate to="/login" replace />;
   };
 
@@ -62,7 +74,7 @@ function App() {
             <>
               <a href="/chatrooms" className="text-[#4fa55d] hover:underline">Rooms</a>
               <a href="/profile" className="text-[#4fa55d] hover:underline">Profile</a>
-              <span className="text-[#6cb54b]">({user.email})</span>
+              <span className="text-[#6cb54b]">({user.username || 'User'})</span>
               <button onClick={handleLogout} className="text-red-400 hover:underline">
                 Logout
               </button>
