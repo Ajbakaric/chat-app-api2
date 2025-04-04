@@ -106,9 +106,13 @@ const ChatRoom = ({ user }) => {
         }
       );
 
+      // 🐛 Preserve sender info during update
       setMessages((prev) =>
-        prev.map((m) => (m.id === messageId ? res.data : m))
+        prev.map((m) =>
+          m.id === messageId ? { ...m, ...res.data } : m
+        )
       );
+
       setEditingId(null);
       setEditingContent('');
     } catch (err) {
@@ -194,9 +198,28 @@ const ChatRoom = ({ user }) => {
                   <div className="text-xs text-gray-500">
                     {new Date(msg.created_at).toLocaleTimeString()}
                   </div>
+                </>
+              )}
 
-                  {(msg.sender_email === user?.email || msg.user?.email === user?.email) && (
-                    <div className="absolute top-2 right-3 text-xs space-x-2">
+              {(msg.sender_email === user?.email || msg.user?.email === user?.email) && (
+                <div className="absolute top-2 right-3 text-xs space-x-2">
+                  {editingId === msg.id ? (
+                    <>
+                      <button
+                        className="text-green-600 hover:underline"
+                        onClick={() => handleEdit(msg.id)}
+                      >
+                        Save
+                      </button>
+                      <button
+                        className="text-red-600 hover:underline"
+                        onClick={() => setEditingId(null)}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
                       <button
                         className="text-blue-600 hover:underline"
                         onClick={() => startEdit(msg)}
@@ -209,9 +232,9 @@ const ChatRoom = ({ user }) => {
                       >
                         Delete
                       </button>
-                    </div>
+                    </>
                   )}
-                </>
+                </div>
               )}
             </div>
           </div>
