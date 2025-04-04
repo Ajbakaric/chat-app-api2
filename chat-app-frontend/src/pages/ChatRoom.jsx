@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import axios from 'axios';  // Use default axios directly
+ // adjust path if needed
 import { createConsumer } from '@rails/actioncable';
 
 const consumer = createConsumer('ws://localhost:3000/cable');
@@ -57,6 +58,8 @@ const ChatRoom = ({ user }) => {
 
     const formData = new FormData();
     formData.append('message[content]', content || '');
+    formData.append('message[chat_room_id]', id);
+    formData.append('message[user_id]', user.id);
     if (image) formData.append('message[image]', image);
 
     try {
@@ -66,6 +69,7 @@ const ChatRoom = ({ user }) => {
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
+            Accept: 'application/json',
             'Content-Type': 'multipart/form-data',
           },
         }
@@ -91,9 +95,9 @@ const ChatRoom = ({ user }) => {
     setEditingContent(msg.content);
   };
 
-  const handleEdit = (messageId) => {
-    axios
-      .patch(
+  const handleEdit = async (messageId) => {
+    try {
+      const res = await axios.patch(
         `http://localhost:3000/api/v1/chat_rooms/${id}/messages/${messageId}`,
         { message: { content: editingContent } },
         {
@@ -101,29 +105,32 @@ const ChatRoom = ({ user }) => {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         }
-      )
-      .then((res) => {
-        setMessages((prev) =>
-          prev.map((m) => (m.id === messageId ? res.data : m))
-        );
-        setEditingId(null);
-        setEditingContent('');
-      });
+      );
+
+      setMessages((prev) =>
+        prev.map((m) => (m.id === messageId ? res.data : m))
+      );
+      setEditingId(null);
+      setEditingContent('');
+    } catch (err) {
+      console.error('Edit failed:', err);
+    }
   };
 
-  const deleteMessage = (messageId) => {
-    axios
-      .delete(
+  const deleteMessage = async (messageId) => {
+    try {
+      await axios.delete(
         `http://localhost:3000/api/v1/chat_rooms/${id}/messages/${messageId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         }
-      )
-      .then(() => {
-        setMessages((prev) => prev.filter((m) => m.id !== messageId));
-      });
+      );
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
+    } catch (err) {
+      console.error('Delete failed:', err);
+    }
   };
 
   return (

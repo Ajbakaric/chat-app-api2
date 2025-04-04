@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from 'axios';  // Use default axios directly
+
 import ChatRooms from './pages/ChatRooms';
 import ChatRoom from './pages/ChatRoom';
 import Login from './pages/Login';
@@ -17,17 +18,17 @@ function App() {
     const token = localStorage.getItem('token');
 
     if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      axios.get('http://localhost:3000/profile')
+      axios.get('/profile')
         .then((res) => {
           setUser(res.data.user);
-          setLoading(false);
         })
         .catch(() => {
           console.error('Auth token invalid or expired.');
           localStorage.removeItem('token');
           delete axios.defaults.headers.common['Authorization'];
           setUser(null);
+        })
+        .finally(() => {
           setLoading(false);
         });
     } else {
@@ -74,8 +75,7 @@ function App() {
         <div className="w-full max-w-4xl">
           <Routes>
             <Route path="/login" element={<Login setUser={setUser} />} />
-            <Route path="/signup" element={<Signup />} />
-
+            <Route path="/signup" element={<Signup setUser={setUser} />} />
             <Route path="/" element={<ProtectedRoute><ChatRooms user={user} /></ProtectedRoute>} />
             <Route path="/chatrooms" element={<ProtectedRoute><ChatRooms user={user} /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile user={user} setUser={setUser} /></ProtectedRoute>} />

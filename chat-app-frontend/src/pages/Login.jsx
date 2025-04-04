@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from 'axios';  // Use the default axios import
 import { useNavigate } from 'react-router-dom';
 
 const Login = ({ setUser }) => {
@@ -12,17 +12,24 @@ const Login = ({ setUser }) => {
     try {
       const res = await axios.post('http://localhost:3000/login', {
         user: { email, password },
+      }, {
+        headers: {
+          'Content-Type': 'application/json',  // Ensure this header is set
+        }
       });
-
-      localStorage.setItem('token', res.data.token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
+  
+      const token = res.data.token;
+      localStorage.setItem('token', token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;  // Set token in default axios
+  
       setUser(res.data.user);
       navigate('/chatrooms');
     } catch (err) {
+      console.error('Login failed:', err);
       alert('Invalid credentials');
-      console.error(err);
     }
   };
+  
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#eafce3] to-[#74e291]">

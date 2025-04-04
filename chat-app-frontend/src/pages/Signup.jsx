@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from 'axios';  // Use default axios directly
+ // adjust path if needed
+
 import { useNavigate } from 'react-router-dom';
 
 const Signup = ({ setUser }) => {
@@ -11,15 +13,20 @@ const Signup = ({ setUser }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     const formData = new FormData();
     formData.append('user[email]', email);
     formData.append('user[password]', password);
     formData.append('user[username]', username);
     if (avatar) formData.append('user[avatar]', avatar);
-
+  
     try {
-      const res = await axios.post('http://localhost:3000/signup', formData);
+      const res = await axios.post('http://localhost:3000/signup', formData, {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+  
       localStorage.setItem('token', res.data.token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
       setUser(res.data.user);

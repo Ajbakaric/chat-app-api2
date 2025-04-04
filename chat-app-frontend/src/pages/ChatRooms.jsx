@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from 'axios';  // Use default axios directly
+// adjust path if needed
+
 import { useNavigate } from 'react-router-dom';
 
 const ChatRooms = ({ user }) => {

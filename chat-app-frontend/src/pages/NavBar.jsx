@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import axios from 'axios';  // Use default axios directly
+// adjust path if needed
+
 
 const NavBar = ({ user, setUser }) => {
   const handleLogout = () => {

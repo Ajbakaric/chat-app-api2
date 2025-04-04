@@ -5,7 +5,6 @@ class Users::RegistrationsController < Devise::RegistrationsController
   include ActionController::MimeResponds
 
   skip_before_action :verify_authenticity_token, raise: false
- 
 
   # 🚫 Prevent Devise from using session-based redirects
   def require_no_authentication
@@ -14,6 +13,11 @@ class Users::RegistrationsController < Devise::RegistrationsController
 
   # 🔍 GET /profile
   def show
+    unless current_user
+      render json: { error: 'Unauthorized' }, status: :unauthorized
+      return
+    end
+
     render json: {
       user: {
         id: current_user.id,
@@ -24,30 +28,34 @@ class Users::RegistrationsController < Devise::RegistrationsController
     }
   end
 
- def create
-  build_resource(sign_up_params)
+  # 📝 POST /signup
+  def create
+    build_resource(sign_up_params)
 
-  resource.save
-  if resource.persisted?
-    if resource.active_for_authentication?
-      token = Warden::JWTAuth::UserEncoder.new.call(resource, :user, nil).first
+    resource.save
+    if resource.persisted?
+      if resource.active_for_authentication?
+        token = Warden::JWTAuth::UserEncoder.new.call(resource, :user, nil).first
 
-      render json: {
-        user: {
-          id: resource.id,
-          email: resource.email,
-          username: resource.username,
-          avatar_url: resource.avatar.attached? ? url_for(resource.avatar) : nil
-        },
-        token: token
-      }, status: :ok
+        render json: {
+          user: {
+            id: resource.id,
+            email: resource.email,
+            username: resource.username,
+            avatar_url: resource.avatar.attached? ? url_for(resource.avatar) : nil
+          },
+          token: token
+        }, status: :ok
+      else
+        render json: { error: 'Account not active' }, status: :unauthorized
+      end
     else
-      render json: { error: 'Account not active' }, status: :unauthorized
+      Rails.logger.debug "Signup failed due to: #{resource.errors.full_messages.inspect}"
+      puts "Signup failed due to: #{resource.errors.full_messages.inspect}"
+
+      render json: { errors: resource.errors.full_messages }, status: :unprocessable_entity
     end
-  else
-    render json: { errors: resource.errors.full_messages }, status: :unprocessable_entity
   end
-end
 
   # ✏️ PUT /profile
   def update

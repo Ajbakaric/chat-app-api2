@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from 'axios';  // Use default axios directly
+ // adjust path if needed
+
 
 const Profile = ({ user, setUser }) => {
   const [username, setUsername] = useState(user?.username || '');
